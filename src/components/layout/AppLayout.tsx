@@ -108,6 +108,12 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-screen bg-[#F2F4F6]">
+      {isBootstrapLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-sm">
+          <div className="h-12 w-12 animate-spin rounded-full border-[3.5px] border-[#E5E8EB] border-t-[#3182F6]" />
+        </div>
+      )}
+      
       <Sidebar
         profile={profile ?? undefined}
         logoutTimeText={logoutTimeText}
@@ -115,16 +121,7 @@ export function AppLayout() {
       />
       <main className="flex-1 min-w-0 overflow-y-auto">
         <div className="max-w-5xl mx-auto px-8 py-8">
-          {isBootstrapLoading ? (
-            <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-6">
-              <div className="text-center">
-                <p className="text-base font-semibold text-[#191F28]">세션을 확인하는 중입니다.</p>
-                <p className="mt-2 text-sm text-[#6B7684]">저장된 로그인 정보를 불러오고 있습니다.</p>
-              </div>
-            </div>
-          ) : (
-            <Outlet />
-          )}
+          {!isBootstrapLoading && <Outlet />}
         </div>
       </main>
     </div>

@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { clearToken } from '../../api/client';
 import {
   LayoutDashboard, UtensilsCrossed, Bell,
-  Building2, Home, Trophy, Vote, User, LogOut, Settings, Users,
+  Home, Trophy, Vote, User, LogOut, Settings, Users,
 } from 'lucide-react';
 import { type StudentProfile } from '../../api/student';
 
