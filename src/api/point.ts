@@ -46,7 +46,7 @@ function normalizePointsResponse(response: RawPointsResponse): PointsResponse {
 }
 
 export const pointApi = {
-  async fetchPoints(type: 'ALL' | 'BONUS' | 'MINUS' = 'ALL', page = 1, size = 50) {
+  async fetchPoints(type: 'ALL' | 'BONUS' | 'MINUS' = 'ALL', page = 0, size = 50) {
     const response = await client.get<RawPointsResponse>('/points', { query: { type, page, size } });
     return normalizePointsResponse(response);
   },
