@@ -15,7 +15,6 @@ export function PointPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
     pointApi.fetchPoints(filter)
       .then(r => {
         setTotalPoint(r?.total_point ?? 0);
@@ -52,7 +51,15 @@ export function PointPage() {
 
       <div className="flex gap-2">
         {(['ALL', 'BONUS', 'MINUS'] as Filter[]).map(f => (
-          <Button key={f} variant={filter === f ? 'primary' : 'secondary'} size="sm" onClick={() => setFilter(f)}>
+          <Button
+            key={f}
+            variant={filter === f ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={() => {
+              setLoading(true);
+              setFilter(f);
+            }}
+          >
             {f === 'ALL' ? '전체' : f === 'BONUS' ? '상점' : '벌점'}
           </Button>
         ))}
@@ -74,13 +81,13 @@ export function PointPage() {
                     <p className="text-sm font-medium text-[#191F28]">{p.point_name ?? '-'}</p>
                     <p className="text-xs text-[#B0B8C1]">{p.date?.slice(0, 10)}</p>
                   </div>
-                </div>
-                <span className={`text-base font-bold ${p.point_type === 'BONUS' ? 'text-[#3182F6]' : 'text-[#F04452]'}`}>
-                  {p.point_type === 'BONUS' ? '+' : '-'}{p.score ?? 0}점
-                </span>
-              </li>
-            ))}
-          </ul>
+                 </div>
+                 <span className={`text-base font-bold ${p.point_type === 'BONUS' ? 'text-[#3182F6]' : 'text-[#F04452]'}`}>
+                  {p.score ?? 0}점
+                 </span>
+               </li>
+             ))}
+           </ul>
         )}
       </Card>
     </div>
