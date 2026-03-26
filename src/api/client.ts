@@ -99,7 +99,7 @@ async function doRefresh(): Promise<string> {
     throw new ApiError(0, '네트워크 오류로 세션을 갱신하지 못했습니다.');
   }
 
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401 || res.status === 403 || res.status === 404) {
     clearToken();
     throw new ApiError(401, '세션이 만료되었습니다. 다시 로그인하세요.');
   }
