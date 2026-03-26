@@ -1,20 +1,6 @@
-import { useState } from 'react';
-import { getBaseUrl, setBaseUrl } from '../api/client';
 import { Card } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
 
 export function SettingsPage() {
-  const [url, setUrl] = useState(getBaseUrl());
-  const [saved, setSaved] = useState(false);
-
-  const save = (e: React.FormEvent) => {
-    e.preventDefault();
-    setBaseUrl(url.trim());
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
-
   return (
     <div className="space-y-6">
       <div>
@@ -22,19 +8,11 @@ export function SettingsPage() {
       </div>
 
       <Card>
-        <h2 className="font-bold text-[#191F28] mb-5">서버 설정</h2>
-        <form onSubmit={save} className="space-y-4">
-          <Input
-            label="Base URL"
-            type="url"
-            placeholder="https://api.example.com"
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-          />
-          <Button type="submit" variant={saved ? 'secondary' : 'primary'}>
-            {saved ? '저장됨 ✓' : '저장'}
-          </Button>
-        </form>
+        <div className="space-y-2">
+          <h2 className="font-bold text-[#191F28]">서버 설정</h2>
+          <p className="text-sm text-[#6B7684]">이 앱은 고정된 서버에 연결됩니다.</p>
+          <p className="text-sm text-[#6B7684]">서버 주소는 앱 내부에 설정되어 있어 별도 입력이나 수정이 필요하지 않습니다.</p>
+        </div>
       </Card>
 
       <Card>
