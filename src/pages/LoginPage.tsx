@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth';
-import { getBaseUrl, setBaseUrl } from '../api/client';
 import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const [baseUrl, setBaseUrlState] = useState(getBaseUrl());
   const [accountId, setAccountId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,8 +14,6 @@ export function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!baseUrl.trim()) { setError('서버 주소를 입력하세요.'); return; }
-    setBaseUrl(baseUrl.trim());
     setError('');
     setLoading(true);
     try {
@@ -30,47 +27,37 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#F2F4F6] p-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#3182F6] rounded-2xl mb-4 shadow-lg">
-            <span className="text-white text-2xl font-bold">D</span>
+        <Card className="space-y-6">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold text-[#191F28]">로그인</h1>
+            <p className="text-sm text-[#6B7684]">아이디와 비밀번호를 입력해 주세요.</p>
           </div>
-          <h1 className="text-2xl font-bold text-[#191F28]">DMS</h1>
-          <p className="text-sm text-[#6B7684] mt-1">기숙사 관리 시스템</p>
-        </div>
 
-        <form onSubmit={handleLogin} className="bg-white rounded-2xl p-6 space-y-4" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <Input
-            label="서버 주소"
-            type="url"
-            placeholder="https://api.example.com"
-            value={baseUrl}
-            onChange={e => setBaseUrlState(e.target.value)}
-          />
-          <Input
-            label="아이디"
-            placeholder="아이디를 입력하세요"
-            value={accountId}
-            onChange={e => setAccountId(e.target.value)}
-            autoComplete="username"
-          />
-          <Input
-            label="비밀번호"
-            type="password"
-            placeholder="비밀번호를 입력하세요"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            autoComplete="current-password"
-            error={error}
-          />
-          <div className="pt-1">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <Input
+              label="아이디"
+              placeholder="아이디를 입력하세요"
+              value={accountId}
+              onChange={e => setAccountId(e.target.value)}
+              autoComplete="username"
+              autoFocus
+            />
+            <Input
+              label="비밀번호"
+              type="password"
+              placeholder="비밀번호를 입력하세요"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              autoComplete="current-password"
+              error={error}
+            />
             <Button type="submit" fullWidth size="lg" loading={loading}>
               로그인
             </Button>
-          </div>
-        </form>
+          </form>
+        </Card>
       </div>
     </div>
   );

@@ -1,20 +1,33 @@
+export const BASE_URL = 'https://dms-gw.donghyun-mint.workers.dev';
+
 const BASE_URL_KEY = 'dms_base_url';
-const TOKEN_KEY = 'dms_access_token';
 
 export function getBaseUrl(): string {
-  return localStorage.getItem(BASE_URL_KEY) || '';
+  const storedBaseUrl = localStorage.getItem(BASE_URL_KEY)?.trim();
+  return storedBaseUrl || BASE_URL;
 }
-export function setBaseUrl(url: string) {
-  localStorage.setItem(BASE_URL_KEY, url.replace(/\/$/, ''));
+
+export function setBaseUrl(url: string): void {
+  const normalizedUrl = url.trim();
+
+  if (!normalizedUrl || normalizedUrl === BASE_URL) {
+    localStorage.removeItem(BASE_URL_KEY);
+    return;
+  }
+
+  localStorage.setItem(BASE_URL_KEY, normalizedUrl);
 }
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
-}
-export function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token);
-}
+
+const ACCESS_TOKEN_KEY  = 'dms_access_token';
+const REFRESH_TOKEN_KEY = 'dms_refresh_token';
+
+export function getToken():         string | null { return localStorage.getItem(ACCESS_TOKEN_KEY); }
+export function getRefreshToken():  string | null { return localStorage.getItem(REFRESH_TOKEN_KEY); }
+export function setToken(t: string)               { localStorage.setItem(ACCESS_TOKEN_KEY, t); }
+export function setRefreshToken(t: string)        { localStorage.setItem(REFRESH_TOKEN_KEY, t); }
 export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
 export class ApiError extends Error {
@@ -25,17 +38,46 @@ export class ApiError extends Error {
   }
 }
 
+// ── Token refresh ────────────────────────────────────────────────────────────
+let refreshing: Promise<string> | null = null;
+
+async function doRefresh(): Promise<string> {
+  const rt = getRefreshToken();
+  if (!rt) throw new ApiError(401, '로그인이 필요합니다.');
+
+  const res = await fetch(`${getBaseUrl()}/auth/tokens`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${rt}` },
+  });
+
+  if (!res.ok) {
+    clearToken();
+    window.location.href = '/login';
+    throw new ApiError(401, '세션이 만료되었습니다. 다시 로그인하세요.');
+  }
+
+  const data = await res.json();
+  setToken(data.access_token);
+  if (data.refresh_token) setRefreshToken(data.refresh_token);
+  return data.access_token;
+}
+
+function refreshOnce(): Promise<string> {
+  if (!refreshing) {
+    refreshing = doRefresh().finally(() => { refreshing = null; });
+  }
+  return refreshing;
+}
+
+// ── Request ──────────────────────────────────────────────────────────────────
 interface RequestOptions {
   body?: unknown;
   query?: Record<string, string | number | undefined | null>;
   noAuth?: boolean;
 }
 
-async function request<T>(method: string, path: string, opts: RequestOptions = {}): Promise<T> {
-  const base = getBaseUrl();
-  if (!base) throw new ApiError(0, 'Base URL이 설정되지 않았습니다. 설정 페이지에서 서버 주소를 입력하세요.');
-
-  let url = base + path;
+async function request<T>(method: string, path: string, opts: RequestOptions = {}, retry = true): Promise<T> {
+  let url = getBaseUrl() + path;
   if (opts.query) {
     const params = new URLSearchParams();
     for (const [k, v] of Object.entries(opts.query)) {
@@ -54,6 +96,16 @@ async function request<T>(method: string, path: string, opts: RequestOptions = {
     headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
+
+  // 401 → refresh & retry once
+  if (res.status === 401 && !opts.noAuth && retry) {
+    try {
+      await refreshOnce();
+      return request<T>(method, path, opts, false);
+    } catch {
+      throw new ApiError(401, '세션이 만료되었습니다. 다시 로그인하세요.');
+    }
+  }
 
   if (res.status === 204) return null as T;
 
