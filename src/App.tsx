@@ -29,6 +29,7 @@ export default function App() {
         <Route path="/mypage"      element={<MyPage />} />
         <Route path="/settings"    element={<SettingsPage />} />
       </Route>
+      <Route path="/app/*" element={<Navigate to="/" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
