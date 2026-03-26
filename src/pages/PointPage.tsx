@@ -3,7 +3,7 @@ import { pointApi, type PointItem } from '../api/point';
 import { Card } from '../components/ui/Card';
 import { Loading } from '../components/ui/Loading';
 import { Empty } from '../components/ui/Empty';
-import { Trophy, TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 type Filter = 'ALL' | 'BONUS' | 'MINUS';
 
@@ -24,28 +24,11 @@ export function PointPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#191F28]">상벌점</h1>
-        <p className="text-sm text-[#6B7684] mt-1">나의 상벌점 내역을 확인하세요</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <div className="flex items-center gap-2 mb-2">
-            <Trophy size={16} className="text-[#3182F6]" />
-            <span className="text-sm text-[#6B7684]">순 점수</span>
-          </div>
-          <p className={`text-2xl font-bold ${totalPoint >= 0 ? 'text-[#3182F6]' : 'text-[#F04452]'}`}>
-            {totalPoint}점
-          </p>
-        </Card>
-        <Card>
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp size={16} className="text-[#6B7684]" />
-            <span className="text-sm text-[#6B7684]">내역 수</span>
-          </div>
-          <p className="text-2xl font-bold text-[#191F28]">{items.length}건</p>
-        </Card>
+      <div className="pt-2">
+        <p className="text-sm font-medium text-[#6B7684]">내 상점</p>
+        <h1 className={`text-3xl font-bold mt-1 tracking-tight ${totalPoint >= 0 ? 'text-[#3182F6]' : 'text-[#F04452]'}`}>
+          {totalPoint}점
+        </h1>
       </div>
 
       <Card padding="none">

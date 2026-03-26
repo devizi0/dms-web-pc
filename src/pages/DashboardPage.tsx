@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import { mealApi, type DayMeal, extractKcal } from '../api/meal';
 import { noticeApi, type Notice } from '../api/notice';
 import { studentApi, type StudentProfile } from '../api/student';
@@ -17,18 +19,16 @@ export function DashboardPage() {
   const [todayMeal, setTodayMeal] = useState<DayMeal | null>(null);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [myRemains, setMyRemains] = useState<MyRemains | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const t = today();
-    studentApi.fetchProfile().then(setProfile).catch(() => {});
-    mealApi.fetchMeals(t)
-      .then(r => {
-        const found = (r?.meals ?? []).find(m => m.date === t) ?? null;
-        setTodayMeal(found);
-      })
-      .catch(() => {});
-    noticeApi.fetchNotices('NEW').then(r => setNotices((r?.notices ?? []).slice(0, 5))).catch(() => {});
-    remainsApi.fetchMyRemains().then(setMyRemains).catch(() => {});
+    Promise.allSettled([
+      studentApi.fetchProfile().then(setProfile),
+      mealApi.fetchMeals(t).then(r => setTodayMeal((r?.meals ?? []).find(m => m.date === t) ?? null)),
+      noticeApi.fetchNotices('NEW').then(r => setNotices((r?.notices ?? []).slice(0, 5))),
+      remainsApi.fetchMyRemains().then(setMyRemains)
+    ]).finally(() => setLoading(false));
   }, []);
 
   const greeting = () => {
@@ -51,7 +51,7 @@ export function DashboardPage() {
       <div>
         <p className="text-sm text-[#6B7684]">{today()} · {greeting()}</p>
         <h1 className="text-2xl font-bold text-[#191F28] mt-0.5">
-          {profile ? `${profile.name}님` : '안녕하세요'} 👋
+          {loading ? <Skeleton width={150} height={32} /> : profile ? `${profile.name}님 👋` : '안녕하세요 👋'}
         </h1>
       </div>
 
@@ -67,10 +67,13 @@ export function DashboardPage() {
                   </div>
                   <span className="text-sm font-medium text-[#6B7684]">잔류</span>
                 </div>
-                {myRemains
-                  ? <p className="text-lg font-bold text-[#191F28]">{myRemains.title}</p>
-                  : <p className="text-[#B0B8C1] text-sm">신청 내역 없음</p>
-                }
+                {loading ? (
+                  <Skeleton width={100} height={24} />
+                ) : myRemains ? (
+                  <p className="text-lg font-bold text-[#191F28]">{myRemains.title}</p>
+                ) : (
+                  <p className="text-[#B0B8C1] text-sm">신청 내역 없음</p>
+                )}
               </div>
               <ChevronRight size={16} className="text-[#B0B8C1] mt-1" />
             </div>
@@ -89,7 +92,13 @@ export function DashboardPage() {
             더보기 <ChevronRight size={14} />
           </Link>
         </div>
-        {meals.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-3 divide-x divide-[#F2F4F6] p-5">
+            <div className="px-5 space-y-2"><Skeleton height={20} width={40} /><Skeleton count={3} /></div>
+            <div className="px-5 space-y-2"><Skeleton height={20} width={40} /><Skeleton count={3} /></div>
+            <div className="px-5 space-y-2"><Skeleton height={20} width={40} /><Skeleton count={3} /></div>
+          </div>
+        ) : meals.length === 0 ? (
           <p className="px-6 py-5 text-sm text-[#B0B8C1]">급식 정보가 없습니다.</p>
         ) : (
           <div className="grid grid-cols-3 divide-x divide-[#F2F4F6]">
@@ -122,7 +131,16 @@ export function DashboardPage() {
             더보기 <ChevronRight size={14} />
           </Link>
         </div>
-        {notices.length === 0 ? (
+        {loading ? (
+          <div className="divide-y divide-[#F2F4F6]">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="px-6 py-4 flex justify-between">
+                <Skeleton width={200} />
+                <Skeleton width={80} />
+              </div>
+            ))}
+          </div>
+        ) : notices.length === 0 ? (
           <p className="px-6 py-5 text-sm text-[#B0B8C1]">공지사항이 없습니다.</p>
         ) : (
           <ul className="divide-y divide-[#F2F4F6]">

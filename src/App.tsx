@@ -5,6 +5,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { MealPage } from './pages/MealPage';
 import { NoticePage, NoticeDetailPage } from './pages/NoticePage';
 import { RemainsPage } from './pages/RemainsPage';
+import { StudyRoomPage } from './pages/StudyRoomPage';
 import { OutingPage } from './pages/OutingPage';
 import { PointPage } from './pages/PointPage';
 import { VotingPage } from './pages/VotingPage';
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/notice"      element={<NoticePage />} />
         <Route path="/notice/:id"  element={<NoticeDetailPage />} />
         <Route path="/remains"     element={<RemainsPage />} />
+        <Route path="/study-room"  element={<StudyRoomPage />} />
         <Route path="/outing"      element={<OutingPage />} />
         <Route path="/point"       element={<PointPage />} />
         <Route path="/voting"      element={<VotingPage />} />

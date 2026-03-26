@@ -3,17 +3,19 @@ import { clearToken } from '../../api/client';
 import {
   LayoutDashboard, UtensilsCrossed, Bell,
   Home, Trophy, Vote, User, LogOut, Settings, Users,
+  BookOpen
 } from 'lucide-react';
 import { type StudentProfile } from '../../api/student';
 
 const NAV = [
-  { to: '/',         icon: LayoutDashboard, label: '대시보드' },
-  { to: '/meal',     icon: UtensilsCrossed, label: '급식' },
-  { to: '/notice',   icon: Bell,            label: '공지사항' },
-  { to: '/remains',  icon: Home,            label: '잔류 신청' },
-  { to: '/point',    icon: Trophy,          label: '상벌점' },
-  { to: '/voting',   icon: Vote,            label: '투표' },
-  { to: '/students', icon: Users,           label: '학생 목록' },
+  { to: '/',            icon: LayoutDashboard, label: '대시보드' },
+  { to: '/meal',        icon: UtensilsCrossed, label: '급식' },
+  { to: '/notice',      icon: Bell,            label: '공지사항' },
+  { to: '/remains',     icon: Home,            label: '잔류 신청' },
+  { to: '/study-room',  icon: BookOpen,        label: '자습실 신청' },
+  { to: '/point',       icon: Trophy,          label: '상벌점' },
+  { to: '/voting',      icon: Vote,            label: '투표' },
+  { to: '/students',    icon: Users,           label: '학생 목록' },
 ];
 
 interface SidebarProps {
@@ -95,10 +97,7 @@ export function Sidebar({ profile, logoutTimeText, isLogoutTimeLoading = false }
         {shouldShowProfileCard && (
           <div className="mx-1 mt-2 px-3 py-2.5 bg-[#F2F4F6] rounded-xl">
             {profile ? (
-              <>
-                <p className="text-sm font-semibold text-[#191F28] truncate">{profile.name}</p>
-                <p className="text-xs text-[#6B7684]">{profile.gcn} · {profile.school_name}</p>
-              </>
+              <p className="text-sm font-semibold text-[#191F28] truncate">{profile.gcn} {profile.name}</p>
             ) : (
               <div className="space-y-2">
                 <div className="h-4 w-20 animate-pulse rounded bg-[#E5E8EB]" />
