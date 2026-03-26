@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { pointApi, type PointItem } from '../api/point';
 import { Card } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
 import { Loading } from '../components/ui/Loading';
 import { Empty } from '../components/ui/Empty';
 import { Trophy, TrendingUp, TrendingDown } from 'lucide-react';
@@ -9,7 +8,7 @@ import { Trophy, TrendingUp, TrendingDown } from 'lucide-react';
 type Filter = 'ALL' | 'BONUS' | 'MINUS';
 
 export function PointPage() {
-  const [filter, setFilter] = useState<Filter>('ALL');
+  const [filter] = useState<Filter>('ALL');
   const [items, setItems] = useState<PointItem[]>([]);
   const [totalPoint, setTotalPoint] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -47,22 +46,6 @@ export function PointPage() {
           </div>
           <p className="text-2xl font-bold text-[#191F28]">{items.length}건</p>
         </Card>
-      </div>
-
-      <div className="flex gap-2">
-        {(['ALL', 'BONUS', 'MINUS'] as Filter[]).map(f => (
-          <Button
-            key={f}
-            variant={filter === f ? 'primary' : 'secondary'}
-            size="sm"
-            onClick={() => {
-              setLoading(true);
-              setFilter(f);
-            }}
-          >
-            {f === 'ALL' ? '전체' : f === 'BONUS' ? '상점' : '벌점'}
-          </Button>
-        ))}
       </div>
 
       <Card padding="none">
