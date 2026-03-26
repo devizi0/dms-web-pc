@@ -1,19 +1,103 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { getToken } from '../../api/client';
+import { ApiError, getRefreshToken, getToken, recoverSession } from '../../api/client';
 import { studentApi, type StudentProfile } from '../../api/student';
+import { Button } from '../ui/Button';
 import { Sidebar } from './Sidebar';
+
+type BootstrapState = 'loading' | 'ready' | 'error';
 
 export function AppLayout() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<StudentProfile | null>(null);
+  const [bootstrapState, setBootstrapState] = useState<BootstrapState>('loading');
+  const [bootstrapError, setBootstrapError] = useState('');
+  const [bootstrapVersion, setBootstrapVersion] = useState(0);
 
   useEffect(() => {
-    if (!getToken()) { navigate('/login', { replace: true }); return; }
-    studentApi.fetchProfile().then(setProfile).catch(() => {});
-  }, [navigate]);
+    let cancelled = false;
 
-  if (!getToken()) return null;
+    const bootstrap = async () => {
+      setBootstrapState('loading');
+      setBootstrapError('');
+
+      const accessToken = getToken();
+      const refreshToken = getRefreshToken();
+
+      if (!accessToken && !refreshToken) {
+        navigate('/login', { replace: true });
+        return;
+      }
+
+      if (!accessToken && refreshToken) {
+        try {
+          await recoverSession();
+        } catch (error) {
+          if (cancelled) return;
+
+          if (error instanceof ApiError && error.status === 401) {
+            navigate('/login', { replace: true });
+            return;
+          }
+
+          setBootstrapError(error instanceof Error ? error.message : '세션을 확인하지 못했습니다.');
+          setBootstrapState('error');
+          return;
+        }
+      }
+
+      try {
+        const nextProfile = await studentApi.fetchProfile();
+        if (!cancelled) {
+          setProfile(nextProfile);
+          setBootstrapState('ready');
+        }
+      } catch (error) {
+        if (cancelled) return;
+
+        if (error instanceof ApiError && error.status === 401) {
+          navigate('/login', { replace: true });
+          return;
+        }
+
+        setBootstrapError(error instanceof Error ? error.message : '사용자 정보를 불러오지 못했습니다.');
+        setBootstrapState('error');
+      }
+    };
+
+    void bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bootstrapVersion, navigate]);
+
+  if (bootstrapState === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F2F4F6] px-6">
+        <div className="text-center">
+          <p className="text-base font-semibold text-[#191F28]">세션을 확인하는 중입니다.</p>
+          <p className="mt-2 text-sm text-[#6B7684]">저장된 로그인 정보를 불러오고 있습니다.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (bootstrapState === 'error') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F2F4F6] px-6">
+        <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-sm">
+          <p className="text-base font-semibold text-[#191F28]">세션을 복구하지 못했습니다.</p>
+          <p className="mt-2 text-sm text-[#6B7684]">{bootstrapError}</p>
+          <div className="mt-5">
+            <Button type="button" fullWidth onClick={() => setBootstrapVersion(current => current + 1)}>
+              다시 시도
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F2F4F6]">
